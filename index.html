@@ -1,3 +1,664 @@
-<!doctype html><html><head><meta charset='utf-8'><title>MVP TRON Gas-Free</title>
-<script src='https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js'></script></head>
-<body><h1>MVP TRON Gas-Free</h1><p>Versión simple de prueba</p></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Staking Tron - CodexWallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js"></script>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b0d17;
+        --card: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.08);
+        --primary: #08f;
+        --accent: #26ffe6;
+        --success: #2dd4bf;
+        --warning: #facc15;
+        --danger: #f87171;
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top left, rgba(38, 255, 230, 0.15), transparent 45%),
+          radial-gradient(circle at 25% 75%, rgba(8, 136, 255, 0.12), transparent 45%),
+          var(--bg);
+        color: #f8fafc;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem 1rem 4rem;
+      }
+
+      .app-shell {
+        width: min(1100px, 100%);
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(8, 136, 255, 0.25), rgba(38, 255, 230, 0.25));
+        border-radius: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 40px 80px rgba(8, 136, 255, 0.12);
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: clamp(1.9rem, 4vw, 2.6rem);
+      }
+
+      header p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        max-width: 60ch;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .grid.cols-2 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      }
+
+      .card h2, .card h3 {
+        margin-top: 0;
+        font-size: 1.25rem;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #0b0d17;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      button:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(8, 136, 255, 0.35);
+      }
+
+      input, select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(15, 23, 42, 0.6);
+        color: #e2e8f0;
+        font-size: 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus, select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(38, 255, 230, 0.2);
+      }
+
+      .flex {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .stat-label {
+        color: rgba(148, 163, 184, 0.9);
+        font-size: 0.875rem;
+      }
+
+      .stat-value {
+        font-size: 1.4rem;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      th {
+        color: rgba(148, 163, 184, 0.8);
+        font-weight: 500;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+      }
+
+      .badge.success {
+        background: rgba(45, 212, 191, 0.15);
+        color: var(--success);
+      }
+
+      .badge.warning {
+        background: rgba(250, 204, 21, 0.1);
+        color: var(--warning);
+      }
+
+      .badge.danger {
+        background: rgba(248, 113, 113, 0.12);
+        color: var(--danger);
+      }
+
+      .alert-list {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .alert-item {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .alert-item strong {
+        display: block;
+      }
+
+      .muted {
+        color: rgba(148, 163, 184, 0.75);
+      }
+
+      .history-table {
+        max-height: 260px;
+        overflow-y: auto;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .history-table table {
+        background: rgba(15, 23, 42, 0.4);
+      }
+
+      .pill {
+        display: inline-flex;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        background: rgba(8, 136, 255, 0.15);
+        color: #bae6fd;
+      }
+
+      @media (max-width: 700px) {
+        header {
+          padding: 1.25rem;
+        }
+
+        .card {
+          padding: 1.25rem;
+        }
+
+        .flex {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <div>
+          <h1>CodexWallet · Staking Tron Stake 2.0</h1>
+          <p>
+            Integración con el staking nativo de Tron (Stake 2.0). Tras revisar los contratos públicos de
+            <span class="pill">StakeSystemContract</span> y <span class="pill">VoteWitnessContract</span>, optamos por usar
+            la delegación directa vía <strong>freezeBalanceV2</strong> y <strong>unfreezeBalanceV2</strong>, evitando capas
+            wrapper adicionales para reducir comisiones y dependencias externas.
+          </p>
+        </div>
+        <div class="flex">
+          <button id="connectButton">Conectar TronLink</button>
+          <div class="stat">
+            <span class="stat-label">Cuenta conectada</span>
+            <span class="stat-value" id="accountAddress">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Estado TronWeb</span>
+            <span class="stat-value" id="tronwebStatus">Desconectado</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="card" aria-labelledby="overview-title">
+        <h2 id="overview-title">Resumen operativo</h2>
+        <div class="grid cols-2">
+          <div class="stat">
+            <span class="stat-label">TRX en staking</span>
+            <span class="stat-value" id="stakedAmount">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Recompensas pendientes</span>
+            <span class="stat-value" id="pendingRewards">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">APY estimado</span>
+            <span class="stat-value" id="apyEstimate">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Última actualización</span>
+            <span class="stat-value" id="lastUpdate">—</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid cols-2">
+        <article class="card" aria-labelledby="stake-title">
+          <h2 id="stake-title">Bloquear TRX</h2>
+          <p class="muted">Bloquea TRX para delegarlos automáticamente a super representantes y obtener recompensas de energía.</p>
+          <label for="stakeAmount">Monto en TRX</label>
+          <input type="number" min="1" step="0.1" id="stakeAmount" placeholder="Ej. 100" />
+          <label for="stakeResource">Recurso</label>
+          <select id="stakeResource">
+            <option value="ENERGY">ENERGY (contratos inteligentes)</option>
+            <option value="BANDWIDTH">BANDWIDTH (transacciones)</option>
+          </select>
+          <button id="stakeButton">Bloquear</button>
+          <p class="muted" id="stakeFeedback"></p>
+        </article>
+
+        <article class="card" aria-labelledby="unstake-title">
+          <h2 id="unstake-title">Desbloquear / Reclamar</h2>
+          <p class="muted">Desbloquea TRX y reclama recompensas de votación o freeze expirado en un solo panel.</p>
+          <label for="unstakeAmount">Monto a desbloquear (TRX)</label>
+          <input type="number" min="1" step="0.1" id="unstakeAmount" placeholder="Ej. 50" />
+          <label for="unstakeResource">Recurso</label>
+          <select id="unstakeResource">
+            <option value="ENERGY">ENERGY</option>
+            <option value="BANDWIDTH">BANDWIDTH</option>
+          </select>
+          <div class="flex">
+            <button id="unstakeButton">Desbloquear</button>
+            <button id="claimButton" style="background: linear-gradient(135deg, #2dd4bf, #26ffe6);">Reclamar recompensas</button>
+          </div>
+          <p class="muted" id="unstakeFeedback"></p>
+        </article>
+      </section>
+
+      <section class="card" aria-labelledby="history-title">
+        <h2 id="history-title">Historial de recompensas</h2>
+        <p class="muted">Se calcula automáticamente usando snapshots locales cada 30 segundos y reclamaciones detectadas.</p>
+        <div class="history-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Evento</th>
+                <th>Monto (TRX)</th>
+              </tr>
+            </thead>
+            <tbody id="rewardHistoryBody">
+              <tr><td colspan="3" class="muted">Sin datos todavía</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="alerts-title">
+        <h2 id="alerts-title">Alertas y recomendaciones</h2>
+        <div id="alertsContainer" class="alert-list">
+          <div class="alert-item muted">Conecta una cuenta para generar alertas contextuales.</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const connectButton = document.getElementById('connectButton');
+      const stakeButton = document.getElementById('stakeButton');
+      const unstakeButton = document.getElementById('unstakeButton');
+      const claimButton = document.getElementById('claimButton');
+      const accountAddressEl = document.getElementById('accountAddress');
+      const tronwebStatusEl = document.getElementById('tronwebStatus');
+      const stakedAmountEl = document.getElementById('stakedAmount');
+      const pendingRewardsEl = document.getElementById('pendingRewards');
+      const apyEstimateEl = document.getElementById('apyEstimate');
+      const lastUpdateEl = document.getElementById('lastUpdate');
+      const historyBody = document.getElementById('rewardHistoryBody');
+      const alertsContainer = document.getElementById('alertsContainer');
+      const stakeFeedbackEl = document.getElementById('stakeFeedback');
+      const unstakeFeedbackEl = document.getElementById('unstakeFeedback');
+
+      let accountAddress = null;
+      let refreshInterval = null;
+      const REFRESH_MS = 30_000;
+
+      const formatNumber = (value, decimals = 2) => (Number(value) || 0).toLocaleString('es-ES', { maximumFractionDigits: decimals });
+
+      function getHistoryStorageKey(address) {
+        return `codexwallet:staking:history:${address}`;
+      }
+
+      function persistSnapshot(address, snapshot) {
+        const key = getHistoryStorageKey(address);
+        const history = JSON.parse(localStorage.getItem(key) || '[]');
+        history.push(snapshot);
+        const trimmed = history.slice(-96); // ~48 horas con snapshot cada 30s
+        localStorage.setItem(key, JSON.stringify(trimmed));
+        return trimmed;
+      }
+
+      function deriveRewardEvents(history) {
+        const events = [];
+        for (let i = 1; i < history.length; i++) {
+          const prev = history[i - 1];
+          const curr = history[i];
+          if (curr.pending < prev.pending - 0.0001) {
+            events.push({
+              type: 'Reclamado',
+              amount: prev.pending - curr.pending,
+              timestamp: curr.timestamp,
+            });
+          } else if (curr.pending > prev.pending + 0.0001) {
+            events.push({
+              type: 'Generado',
+              amount: curr.pending - prev.pending,
+              timestamp: curr.timestamp,
+            });
+          }
+        }
+        return events.slice(-50).reverse();
+      }
+
+      function renderHistory(events) {
+        historyBody.innerHTML = '';
+        if (!events.length) {
+          historyBody.innerHTML = '<tr><td colspan="3" class="muted">Sin datos todavía</td></tr>';
+          return;
+        }
+
+        for (const event of events) {
+          const tr = document.createElement('tr');
+          const date = new Date(event.timestamp);
+          tr.innerHTML = `
+            <td>${date.toLocaleString('es-ES')}</td>
+            <td>${event.type}</td>
+            <td>${formatNumber(event.amount)}</td>
+          `;
+          historyBody.appendChild(tr);
+        }
+      }
+
+      function computeAPY(history) {
+        if (history.length < 2) return null;
+        const recent = history.filter((entry) => Date.now() - entry.timestamp <= 1000 * 60 * 60 * 24);
+        if (recent.length < 2) return null;
+
+        const first = recent[0];
+        const last = recent[recent.length - 1];
+        const deltaReward = last.pending - first.pending;
+        const deltaTimeSeconds = (last.timestamp - first.timestamp) / 1000;
+        if (!deltaTimeSeconds || !last.staked) return null;
+
+        const rewardPerSecond = deltaReward / deltaTimeSeconds;
+        const yearlyReward = rewardPerSecond * 60 * 60 * 24 * 365;
+        if (!last.staked) return null;
+        return (yearlyReward / last.staked) * 100;
+      }
+
+      function renderAlerts(accountInfo, pendingRewardsTrx) {
+        alertsContainer.innerHTML = '';
+        const alerts = [];
+
+        const unfrozen = accountInfo?.unfrozenV2 ?? [];
+        const matured = unfrozen.filter((item) => item.unfreeze_expire_time <= Date.now());
+        if (matured.length) {
+          alerts.push({
+            tone: 'success',
+            title: 'Fondos listos para retiro',
+            detail: `Hay ${formatNumber(matured.reduce((sum, entry) => sum + entry.amount / 1e6, 0))} TRX desbloqueados y disponibles.`,
+          });
+        }
+
+        if (pendingRewardsTrx > 10) {
+          alerts.push({
+            tone: 'warning',
+            title: 'Recompensas elevadas',
+            detail: 'Considera reclamar para capitalizar las ganancias y reinvertirlas.',
+          });
+        }
+
+        const stakedTrx = (accountInfo?.frozenV2 || []).reduce((sum, entry) => sum + entry.amount / 1e6, 0);
+        if (!stakedTrx) {
+          alerts.push({
+            tone: 'danger',
+            title: 'Sin TRX en staking',
+            detail: 'Bloquea TRX para empezar a generar rendimiento bajo el modelo Stake 2.0.',
+          });
+        }
+
+        if (!alerts.length) {
+          alertsContainer.innerHTML = '<div class="alert-item"><strong>Todo en orden.</strong> No se detectaron acciones urgentes.</div>';
+          return;
+        }
+
+        for (const alert of alerts) {
+          const div = document.createElement('div');
+          div.className = `alert-item`;
+          const toneBadge = {
+            success: '<span class="badge success">✔</span>',
+            warning: '<span class="badge warning">⚠</span>',
+            danger: '<span class="badge danger">!</span>',
+          }[alert.tone] || '';
+          div.innerHTML = `${toneBadge}<div><strong>${alert.title}</strong>${alert.detail}</div>`;
+          alertsContainer.appendChild(div);
+        }
+      }
+
+      async function refreshAccountData() {
+        if (!window.tronWeb || !window.tronWeb.ready || !accountAddress) return;
+        try {
+          const tronWeb = window.tronWeb;
+          tronwebStatusEl.textContent = 'Conectado';
+          const accountInfo = await tronWeb.trx.getAccount(accountAddress);
+          const frozenV2 = accountInfo.frozenV2 || [];
+          const stakedSun = frozenV2.reduce((acc, item) => acc + Number(item.amount || 0), 0);
+          const stakedTrx = stakedSun / 1e6;
+          const pendingRewardsSun = await tronWeb.trx.getReward(accountAddress);
+          const pendingRewardsTrx = pendingRewardsSun / 1e6;
+
+          stakedAmountEl.textContent = formatNumber(stakedTrx);
+          pendingRewardsEl.textContent = formatNumber(pendingRewardsTrx);
+          lastUpdateEl.textContent = new Date().toLocaleTimeString('es-ES');
+
+          const snapshot = {
+            timestamp: Date.now(),
+            pending: pendingRewardsTrx,
+            staked: stakedTrx,
+          };
+
+          const history = persistSnapshot(accountAddress, snapshot);
+          const apy = computeAPY(history);
+          apyEstimateEl.textContent = apy ? `${formatNumber(apy, 2)} %` : 'Recolectando datos…';
+          renderHistory(deriveRewardEvents(history));
+          renderAlerts(accountInfo, pendingRewardsTrx);
+        } catch (error) {
+          console.error('Error refrescando datos', error);
+          tronwebStatusEl.textContent = 'Error';
+        }
+      }
+
+      async function connectWallet() {
+        try {
+          if (!(window.tronWeb && window.tronWeb.ready)) {
+            tronwebStatusEl.textContent = 'Instala TronLink';
+            alert('Para continuar necesitas TronLink en este navegador.');
+            return;
+          }
+
+          const tronWeb = window.tronWeb;
+          await tronWeb.request({ method: 'tron_requestAccounts' });
+          accountAddress = tronWeb.defaultAddress.base58;
+          accountAddressEl.textContent = accountAddress;
+          tronwebStatusEl.textContent = 'Conectado';
+
+          await refreshAccountData();
+          if (refreshInterval) clearInterval(refreshInterval);
+          refreshInterval = setInterval(refreshAccountData, REFRESH_MS);
+        } catch (error) {
+          console.error('Error conectando TronLink', error);
+          tronwebStatusEl.textContent = 'Error al conectar';
+        }
+      }
+
+      async function handleStake() {
+        if (!accountAddress) {
+          stakeFeedbackEl.textContent = 'Conecta una billetera antes de bloquear fondos.';
+          return;
+        }
+        const amount = Number(document.getElementById('stakeAmount').value);
+        const resource = document.getElementById('stakeResource').value;
+        if (!amount || amount <= 0) {
+          stakeFeedbackEl.textContent = 'Ingresa un monto válido.';
+          return;
+        }
+
+        try {
+          stakeButton.disabled = true;
+          stakeFeedbackEl.textContent = 'Firmando transacción…';
+          const tronWeb = window.tronWeb;
+          const amountSun = tronWeb.toSun(amount);
+          const tx = await tronWeb.transactionBuilder.freezeBalanceV2(
+            amountSun,
+            resource,
+            tronWeb.defaultAddress.base58
+          );
+          const signed = await tronWeb.trx.sign(tx);
+          const receipt = await tronWeb.trx.sendRawTransaction(signed);
+          stakeFeedbackEl.textContent = receipt?.result ? 'Bloqueo enviado a la red.' : 'No se pudo enviar la transacción.';
+          await refreshAccountData();
+        } catch (error) {
+          console.error('Error al bloquear', error);
+          stakeFeedbackEl.textContent = 'Error: ' + (error?.message || 'no se pudo completar la operación.');
+        } finally {
+          stakeButton.disabled = false;
+        }
+      }
+
+      async function handleUnstake() {
+        if (!accountAddress) {
+          unstakeFeedbackEl.textContent = 'Conecta una billetera antes de desbloquear fondos.';
+          return;
+        }
+        const amount = Number(document.getElementById('unstakeAmount').value);
+        const resource = document.getElementById('unstakeResource').value;
+        if (!amount || amount <= 0) {
+          unstakeFeedbackEl.textContent = 'Ingresa un monto válido.';
+          return;
+        }
+
+        try {
+          unstakeButton.disabled = true;
+          unstakeFeedbackEl.textContent = 'Firmando transacción de desbloqueo…';
+          const tronWeb = window.tronWeb;
+          const amountSun = tronWeb.toSun(amount);
+          const tx = await tronWeb.transactionBuilder.unfreezeBalanceV2(
+            amountSun,
+            resource,
+            tronWeb.defaultAddress.base58
+          );
+          const signed = await tronWeb.trx.sign(tx);
+          const receipt = await tronWeb.trx.sendRawTransaction(signed);
+          unstakeFeedbackEl.textContent = receipt?.result ? 'Desbloqueo enviado. Recuerda esperar el periodo reglamentario.' : 'No se pudo enviar la transacción.';
+          await refreshAccountData();
+        } catch (error) {
+          console.error('Error al desbloquear', error);
+          unstakeFeedbackEl.textContent = 'Error: ' + (error?.message || 'no se pudo completar la operación.');
+        } finally {
+          unstakeButton.disabled = false;
+        }
+      }
+
+      async function handleClaim() {
+        if (!accountAddress) {
+          unstakeFeedbackEl.textContent = 'Conecta una billetera antes de reclamar.';
+          return;
+        }
+
+        try {
+          claimButton.disabled = true;
+          unstakeFeedbackEl.textContent = 'Reclamando recompensas…';
+          const tronWeb = window.tronWeb;
+          const tx = await tronWeb.transactionBuilder.withdrawExpireUnfreeze(tronWeb.defaultAddress.base58);
+          const signed = await tronWeb.trx.sign(tx);
+          const receipt = await tronWeb.trx.sendRawTransaction(signed);
+          unstakeFeedbackEl.textContent = receipt?.result ? 'Recompensas reclamadas.' : 'No se pudo reclamar.';
+          await refreshAccountData();
+        } catch (error) {
+          console.error('Error al reclamar', error);
+          unstakeFeedbackEl.textContent = 'Error: ' + (error?.message || 'no se pudo completar la operación.');
+        } finally {
+          claimButton.disabled = false;
+        }
+      }
+
+      connectButton.addEventListener('click', connectWallet);
+      stakeButton.addEventListener('click', handleStake);
+      unstakeButton.addEventListener('click', handleUnstake);
+      claimButton.addEventListener('click', handleClaim);
+
+      window.addEventListener('load', async () => {
+        if (window.tronWeb && window.tronWeb.ready) {
+          tronwebStatusEl.textContent = 'TronLink detectado';
+        } else {
+          tronwebStatusEl.textContent = 'Esperando TronLink…';
+        }
+      });
+    </script>
+  </body>
+</html>
