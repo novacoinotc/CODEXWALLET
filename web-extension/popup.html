@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>CodexWallet Tron</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>CodexWallet Tron</h1>
+      <p class="subtitle">Proveedor TronWeb inyectado para dApps</p>
+    </header>
+
+    <main>
+      <section id="active-account" class="card">
+        <h2>Cuenta activa</h2>
+        <div id="active-account-info" class="empty">Sin seleccionar</div>
+        <button id="generate-account" class="primary">Generar cuenta software</button>
+      </section>
+
+      <section class="card">
+        <h2>Cuentas guardadas</h2>
+        <ul id="accounts-list" class="accounts"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Importar cuenta</h2>
+        <form id="import-form">
+          <label>
+            Alias
+            <input type="text" id="import-label" placeholder="Cuenta principal" />
+          </label>
+          <label>
+            Dirección Tron (opcional)
+            <input type="text" id="import-address" placeholder="T..." />
+          </label>
+          <label>
+            Clave privada (hex)
+            <input type="password" id="import-private" required />
+          </label>
+          <button type="submit" class="secondary">Guardar cuenta</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Conexión dApps</h2>
+        <div class="walletconnect">
+          <button id="start-walletconnect" class="primary">Crear sesión WalletConnect</button>
+          <div id="walletconnect-uri" class="uri"></div>
+          <ul id="walletconnect-sessions" class="sessions"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <small>CodexWallet &mdash; Tron compatible</small>
+    </footer>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

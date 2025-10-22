@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "CodexWallet Tron",
+    "slug": "codexwallet-tron",
+    "version": "0.1.0",
+    "scheme": "codexwallet",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.codexwallet.tron"
+    },
+    "android": {
+      "package": "app.codexwallet.tron",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "codexwallet"
+          },
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
