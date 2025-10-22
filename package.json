@@ -1,0 +1,9 @@
+{
+  "name": "codexwallet",
+  "version": "0.1.0",
+  "description": "CodexWallet onboarding and offline signing utilities",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
