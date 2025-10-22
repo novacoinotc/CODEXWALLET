@@ -1,3 +1,159 @@
-<!doctype html><html><head><meta charset='utf-8'><title>MVP TRON Gas-Free</title>
-<script src='https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js'></script></head>
-<body><h1>MVP TRON Gas-Free</h1><p>Versión simple de prueba</p></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>CodexWallet · Onboarding y Firmas Offline</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+    header {
+      background: #020617;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid #1e293b;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      display: grid;
+      gap: 2rem;
+    }
+    section {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
+    }
+    h1, h2 {
+      margin: 0 0 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    p {
+      margin: 0 0 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #cbd5f5;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: rgba(15, 23, 42, 0.9);
+      color: #e2e8f0;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      font-family: 'Fira Code', 'SFMono-Regular', Menlo, monospace;
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      border: none;
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(99, 102, 241, 0.35);
+    }
+    .status {
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+      min-height: 1.5rem;
+      color: #94a3b8;
+    }
+    .status[data-type="success"] {
+      color: #34d399;
+    }
+    .status[data-type="error"] {
+      color: #f87171;
+    }
+    .panel-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CodexWallet · Onboarding multi-plataforma</h1>
+    <p>Genera, importa y cifra seeds BIP39 con almacenamiento seguro local. Incluye utilidades de firmas Tron offline.</p>
+  </header>
+  <main>
+    <section>
+      <h2>Crear nueva seed</h2>
+      <p>Genera una frase BIP39 y guárdala cifrada mediante PBKDF2 + AES-GCM dentro de IndexedDB.</p>
+      <form id="create-wallet-form">
+        <label for="create-password">Contraseña maestra</label>
+        <input id="create-password" name="password" type="password" required autocomplete="new-password" placeholder="Define una contraseña segura" />
+        <label for="create-strength">Entropía (bits)</label>
+        <select id="create-strength" name="strength">
+          <option value="128">128 bits (12 palabras)</option>
+          <option value="160">160 bits (15 palabras)</option>
+          <option value="192">192 bits (18 palabras)</option>
+          <option value="224">224 bits (21 palabras)</option>
+          <option value="256">256 bits (24 palabras)</option>
+        </select>
+        <div class="panel-actions">
+          <button type="submit">Generar y cifrar</button>
+          <button type="button" id="clear-storage">Reiniciar almacenamiento seguro</button>
+        </div>
+      </form>
+      <div id="create-status" class="status" data-type="info"></div>
+      <label for="create-output">Frase mnemónica (solo lectura)</label>
+      <textarea id="create-output" readonly placeholder="La seed generada aparecerá aquí..."></textarea>
+    </section>
+
+    <section>
+      <h2>Importar seed existente</h2>
+      <p>Introduce tu frase BIP39 para validarla y cifrarla con una contraseña nueva.</p>
+      <form id="import-wallet-form">
+        <label for="import-mnemonic">Frase BIP39</label>
+        <textarea id="import-mnemonic" name="mnemonic" placeholder="Introduce tu frase separada por espacios" required></textarea>
+        <label for="import-password">Contraseña de cifrado</label>
+        <input id="import-password" name="password" type="password" required placeholder="Contraseña para proteger la seed" />
+        <button type="submit">Importar y cifrar</button>
+      </form>
+      <div id="import-status" class="status" data-type="info"></div>
+    </section>
+
+    <section>
+      <h2>Desbloquear seed cifrada</h2>
+      <p>Descifra la seed almacenada localmente introduciendo la contraseña maestra.</p>
+      <form id="unlock-wallet-form">
+        <label for="unlock-password">Contraseña maestra</label>
+        <input id="unlock-password" name="password" type="password" required placeholder="Introduce tu contraseña" />
+        <button type="submit">Descifrar seed</button>
+      </form>
+      <div id="unlock-status" class="status" data-type="info"></div>
+      <label for="unlock-output">Seed descifrada</label>
+      <textarea id="unlock-output" readonly placeholder="La seed cifrada aparecerá aquí al desbloquearse"></textarea>
+    </section>
+
+    <section>
+      <h2>Firmas offline Tron</h2>
+      <p>La librería <code>src/signing/offlineSigner.js</code> permite firmar mensajes en frío y validar la firma contra una dirección Tron (Base58 o hex).</p>
+      <p>Consulta los tests en <code>tests/offlineSigner.test.js</code> para ver el flujo de uso desde Node.js.</p>
+    </section>
+  </main>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
