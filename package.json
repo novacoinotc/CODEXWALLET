@@ -1,0 +1,14 @@
+{
+  "name": "codexwallet",
+  "version": "1.0.0",
+  "description": "Gasless transaction relayer for Tron",
+  "type": "module",
+  "main": "relayer/relayer.js",
+  "scripts": {
+    "start": "node relayer/relayer.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "tronweb": "^5.3.0"
+  }
+}
